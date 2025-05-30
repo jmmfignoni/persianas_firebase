@@ -1,21 +1,31 @@
-from ota_update.main.ota_updater import OTAUpdater
 
 
-def download_and_install_update_if_available():
-    token = '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'
-    ota_updater = OTAUpdater('https://github.com/jmmfignoni/persianas_firebase', headers={'Authorization': 'token {}'.format(token)})
-    ota_updater.download_and_install_update_if_available('wifi-ssid', 'wifi-password')
+def connectToWifiAndUpdate():
+    import time, machine, network, gc#, app.secrets as secrets
+    time.sleep(1)
+    print('Memory free', gc.mem_free())
 
-def start():
-    # your custom code goes here. Something like this: ...
-    # from main.x import YourProject
-    # project = YourProject()
-    # ...
-    print('Version 1')
-    
-def boot():
-    download_and_install_update_if_available()
-    start()
+    from app.ota_updater import OTAUpdater
+
+    sta_if = network.WLAN(network.STA_IF)
+    if not sta_if.isconnected():
+        print('connecting to network...')
+        sta_if.active(True)
+        sta_if.connect('martinezcrosa', 'D18112022')#(secrets.WIFI_SSID, secrets.WIFI_PASSWORD)
+        while not sta_if.isconnected():
+            pass
+    print('network config:', sta_if.ifconfig())
+    otaUpdater = OTAUpdater('https://github.com/jmmfignoni/persianas_firebase', main_dir='app', secrets_file="secrets.py")
+    hasUpdated = otaUpdater.install_update_if_available()
+    if hasUpdated:
+        machine.reset()
+    else:
+        del(otaUpdater)
+        gc.collect()
+
+def startApp():
+    import app.start
 
 
-boot()
+connectToWifiAndUpdate()
+startApp()
