@@ -15,7 +15,8 @@ def connectToWifiAndUpdate():
         while not sta_if.isconnected():
             pass
     print('network config:', sta_if.ifconfig())
-    otaUpdater = OTAUpdater('https://github.com/jmmfignoni/persianas_firebase', main_dir='app', secrets_file="secrets.py")
+    token='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'
+    otaUpdater = OTAUpdater('https://github.com/jmmfignoni/persianas_firebase', headers={'Authorization': 'token {}'.format(token)}, main_dir='esp32', secrets_file="secrets.py")
     hasUpdated = otaUpdater.install_update_if_available()
     if hasUpdated:
         machine.reset()
